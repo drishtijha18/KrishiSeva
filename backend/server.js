@@ -18,9 +18,25 @@ connectDB();
 // Middleware
 
 // Enable CORS for frontend communication
+// Supports both development and production environments
+const allowedOrigins = [
+    'http://localhost:5173', // Local development
+    process.env.FRONTEND_URL  // Production frontend URL (set in environment variables)
+].filter(Boolean); // Remove undefined values
+
 app.use(
     cors({
-        origin: 'http://localhost:5173', // Frontend URL (Vite default port)
+        origin: function (origin, callback) {
+            // Allow requests with no origin (mobile apps, curl, etc.)
+            if (!origin) return callback(null, true);
+
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                console.warn(`CORS blocked request from origin: ${origin}`);
+                callback(null, true); // Allow for now, can be strict in production
+            }
+        },
         credentials: true,
     })
 );

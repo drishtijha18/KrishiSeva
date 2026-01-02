@@ -1,7 +1,7 @@
 // Seller Dashboard Component
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../../config/axios';
 import { getToken, logout } from '../../utils/auth';
 import '../../styles/dashboard.css';
 import '../../styles/dashboard-theme.css';
