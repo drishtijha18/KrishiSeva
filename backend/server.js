@@ -23,7 +23,8 @@ connectDB();
 // Supports both development and production environments
 const allowedOrigins = [
     'http://localhost:5173', // Local development
-    process.env.FRONTEND_URL  // Production frontend URL (set in environment variables)
+    'https://krishi-seva-six.vercel.app', // Vercel production
+    process.env.FRONTEND_URL  // Additional production frontend URL (set in environment variables)
 ].filter(Boolean); // Remove undefined values
 
 app.use(
