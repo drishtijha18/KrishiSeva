@@ -1,0 +1,13 @@
+{
+    "name": "krishiseva-root",
+    "version": "1.0.0",
+    "description": "Root package to handle deployment",
+    "scripts": {
+        "install-backend": "cd backend && npm install",
+        "build": "npm run install-backend",
+        "start": "cd backend && npm start"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
