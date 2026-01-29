@@ -141,6 +141,47 @@ const SellerDashboard = () => {
                         <h1>Welcome, {user?.name?.split(' ')[0] || 'Seller'}! 🌱</h1>
                         <p>Manage your products and grow your agricultural business</p>
                     </div>
+                    <button
+                        className="bell-icon-btn"
+                        onClick={() => navigate('/crop-prices')}
+                        title="View Crop Price Updates"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%)',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '50px',
+                            height: '50px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
+                            transition: 'all 0.3s ease',
+                            position: 'relative'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.1) rotate(15deg)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(46, 204, 113, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 204, 113, 0.3)';
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
+                        </svg>
+                        <span style={{
+                            position: 'absolute',
+                            top: '-2px',
+                            right: '-2px',
+                            background: '#e74c3c',
+                            borderRadius: '50%',
+                            width: '10px',
+                            height: '10px',
+                            border: '2px solid white'
+                        }}></span>
+                    </button>
                 </div>
 
                 {/* Stats Section */}

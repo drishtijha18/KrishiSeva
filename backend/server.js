@@ -5,6 +5,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
+const cropPricesRoutes = require('./routes/cropprices');
+const orderRoutes = require('./routes/order');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -66,6 +68,12 @@ app.get('/', (req, res) => {
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
+
+// Crop prices routes
+app.use('/api/cropprices', cropPricesRoutes);
+
+// Order routes
+app.use('/api/orders', orderRoutes);
 
 // 404 Error handler for undefined routes
 app.use((req, res) => {

@@ -45,7 +45,7 @@ exports.signup = async (req, res) => {
         }
 
         // Create new user in database
-        
+
         const user = await User.create({
             name,
             email,
@@ -81,10 +81,10 @@ exports.signup = async (req, res) => {
 // Handles user authentication
 exports.login = async (req, res) => {
     try {
-        
+
         const { email, password } = req.body;
 
-        
+
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
@@ -116,7 +116,7 @@ exports.login = async (req, res) => {
         // Generate JWT token
         const token = generateToken(user._id, user.email, user.role);
 
-        
+
         res.status(200).json({
             success: true,
             message: 'Login successful! Welcome back to KrishiSeva.',
@@ -140,7 +140,7 @@ exports.login = async (req, res) => {
 
 exports.getDashboard = async (req, res) => {
     try {
-        
+
         const user = await User.findById(req.user.id).select('-password');
 
         if (!user) {
@@ -158,6 +158,10 @@ exports.getDashboard = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                phone: user.phone,
+                address: user.address,
+                profileCompleted: user.profileCompleted,
+                profilePhoto: user.profilePhoto,
                 createdAt: user.createdAt,
             },
         });
@@ -166,6 +170,73 @@ exports.getDashboard = async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Server error. Please try again.',
+        });
+    }
+};
+
+// Update User Profile
+exports.updateProfile = async (req, res) => {
+    try {
+        console.log('📝 Update Profile Request:', { userId: req.user.id });
+
+        const { phone, address, profilePhoto } = req.body;
+
+        // Find user
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found',
+            });
+        }
+
+        // Update fields
+        if (phone) {
+            user.phone = phone;
+        }
+
+        if (profilePhoto !== undefined) {
+            user.profilePhoto = profilePhoto;
+        }
+
+        if (address) {
+            user.address = {
+                street: address.street || user.address?.street || '',
+                city: address.city || user.address?.city || '',
+                state: address.state || user.address?.state || '',
+                pincode: address.pincode || user.address?.pincode || '',
+            };
+        }
+
+        // Check if profile is now complete (phone + address)
+        const isAddressComplete = user.address?.street && user.address?.city &&
+            user.address?.state && user.address?.pincode;
+
+        if (user.phone && isAddressComplete) {
+            user.profileCompleted = true;
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                phone: user.phone,
+                address: user.address,
+                profileCompleted: user.profileCompleted,
+                profilePhoto: user.profilePhoto,
+            },
+        });
+    } catch (error) {
+        console.error('Update Profile Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error while updating profile',
         });
     }
 };

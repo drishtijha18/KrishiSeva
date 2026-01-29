@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
                 'Please provide a valid email',
             ],
         },
-            //ye terminal pr error dega agar email valid nhi hoga..terminal pr command se check kr skte hai..
+        //ye terminal pr error dega agar email valid nhi hoga..terminal pr command se check kr skte hai..
         // User's password (will be hashed before saving)
         password: {
             type: String,
@@ -39,6 +39,45 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['Buyer', 'Seller'],
             required: [true, 'Please select a role'],
+        },
+
+        // Profile photo (base64 or URL)
+        profilePhoto: {
+            type: String,
+            default: '',
+        },
+
+        // Phone number (optional initially, required for orders)
+        phone: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
+        // Address for delivery
+        address: {
+            street: {
+                type: String,
+                default: '',
+            },
+            city: {
+                type: String,
+                default: '',
+            },
+            state: {
+                type: String,
+                default: '',
+            },
+            pincode: {
+                type: String,
+                default: '',
+            },
+        },
+
+        // Profile completion flag
+        profileCompleted: {
+            type: Boolean,
+            default: false,
         },
     },
     {
@@ -54,7 +93,7 @@ userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
     }
-//this function is used for map filter or reduce
+    //this function is used for map filter or reduce
     try {
         // Generate a salt
         const salt = await bcrypt.genSalt(10);

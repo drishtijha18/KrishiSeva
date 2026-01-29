@@ -1,14 +1,17 @@
-/* 
-  ccs h file 
-  Signup and Login pages with modern design
-*/
+/* Authentication Pages - Minimal & Calm Theme */
 
 .auth-page {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #f5f1e8 0%, #e8e0d0 100%);
+    /* Landscape background image */
+    background-image: url('https://wallup.net/wp-content/uploads/2019/09/201208-landscapes-nature-fields-hdr-photography-crops-748x468.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Fallback color */
+    background-color: #F8F5EE;
     padding: 2rem 1rem;
 }
 
@@ -17,14 +20,17 @@
     max-width: 480px;
 }
 
-/* Auth Card with Glassmorphism Effect */
+/* Auth Card */
 .auth-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(45, 80, 22, 0.15);
+    /* Pure white background */
+    background: #FFFFFF;
+    backdrop-filter: none;
+    /* Rounded corners 12px max */
+    border-radius: 0 !important;
+    /* Very soft, low-contrast shadow */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     padding: 2.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 /* Logo/Header Section */
@@ -44,17 +50,20 @@
 .auth-logo svg {
     width: 36px;
     height: 36px;
-    fill: var(--secondary-green);
+    /* Deep muted green */
+    fill: #2F6B3C;
 }
 
 .auth-logo h1 {
     font-size: 1.875rem;
-    color: var(--primary-green);
+    /* Deep muted green */
+    color: #2F6B3C;
     margin: 0;
+    font-weight: 700;
 }
 
 .auth-subtitle {
-    color: var(--gray-text);
+    color: #6c7a89;
     font-size: 0.95rem;
 }
 
@@ -67,15 +76,16 @@
 
 .role-tab {
     flex: 1;
-    padding: 0.875rem 1.25rem;
-    border-radius: 50px;
-    border: 2px solid var(--medium-gray);
-    background-color: var(--white);
-    color: var(--gray-text);
+    padding: 0.75rem 1rem;
+    border-radius: 0 !important;
+    /* Neutral light border for inactive */
+    border: 1px solid #D6E3DA;
+    background-color: #FFFFFF;
+    color: #6c7a89;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -83,20 +93,22 @@
 }
 
 .role-tab:hover {
-    border-color: var(--accent-green);
-    transform: translateY(-2px);
+    border-color: #2F6B3C;
+    color: #2F6B3C;
+    background-color: #F8F5EE;
 }
 
 .role-tab.active {
-    background-color: var(--secondary-green);
-    border-color: var(--secondary-green);
-    color: var(--white);
-    box-shadow: var(--shadow-md);
+    /* Active state - flat style */
+    background-color: #2F6B3C;
+    border-color: #2F6B3C;
+    color: white;
+    box-shadow: none;
 }
 
 .role-tab svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Form Styles */
@@ -112,10 +124,30 @@
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     font-weight: 500;
-    color: var(--dark-text);
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    /* White background */
+    background-color: #FFFFFF;
+    /* Light neutral border */
+    border: 1px solid #DADADA;
+    border-radius: 0 !important;
     font-size: 0.95rem;
+    color: #2d3748;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    /* Thin border in muted green */
+    border-color: #2F6B3C;
+    box-shadow: 0 0 0 1px #2F6B3C;
 }
 
 .input-with-icon {
@@ -127,7 +159,7 @@
 .input-icon {
     position: absolute;
     left: 1rem;
-    color: var(--gray-text);
+    color: #9ca3af;
     width: 20px;
     height: 20px;
     pointer-events: none;
@@ -140,33 +172,34 @@
 /* Submit Button */
 .auth-submit {
     width: 100%;
-    padding: 1rem;
-    background-color: var(--secondary-green);
-    color: var(--white);
+    padding: 0.9rem;
+    /* Deep muted green */
+    background-color: #2F6B3C;
+    color: white;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: 0 !important;
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: 1rem;
     cursor: pointer;
-    transition: var(--transition);
+    transition: background-color 0.2s ease;
     margin-top: 0.5rem;
-    box-shadow: var(--shadow-sm);
+    /* Flat style - no shadow */
+    box-shadow: none;
 }
 
 .auth-submit:hover {
-    background-color: var(--primary-green);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    background-color: #255830;
+    transform: none;
+    box-shadow: none;
 }
 
 .auth-submit:active {
-    transform: translateY(0);
+    background-color: #1e4626;
 }
 
 .auth-submit:disabled {
-    background-color: var(--medium-gray);
+    background-color: #cbd5e0;
     cursor: not-allowed;
-    transform: none;
 }
 
 /* Footer Links */
@@ -174,24 +207,26 @@
     text-align: center;
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid var(--medium-gray);
+    border-top: 1px solid #f0f2f5;
 }
 
 .auth-footer p {
-    color: var(--gray-text);
-    font-size: 0.95rem;
+    color: #718096;
+    font-size: 0.9rem;
     margin-bottom: 0;
 }
 
 .auth-footer a {
-    color: var(--secondary-green);
+    /* Darker muted green */
+    color: #2F6B3C;
     font-weight: 600;
     text-decoration: none;
+    transition: opacity 0.2s;
 }
 
 .auth-footer a:hover {
-    color: var(--primary-green);
-    text-decoration: underline;
+    opacity: 0.8;
+    text-decoration: none;
 }
 
 .forgot-password {
@@ -200,55 +235,37 @@
 }
 
 .forgot-password a {
-    color: var(--secondary-green);
-    font-size: 0.9rem;
+    /* Darker muted green */
+    color: #2F6B3C;
+    font-size: 0.85rem;
     text-decoration: none;
 }
 
 .forgot-password a:hover {
-    text-decoration: underline;
+    opacity: 0.8;
 }
 
 /* Error and Success Messages */
 .alert {
-    padding: 0.875rem 1.25rem;
-    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    border-radius: 0 !important;
     margin-bottom: 1.25rem;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
 }
 
 .alert-error {
-    background-color: #ffebee;
-    color: #c62828;
-    border-left: 4px solid var(--error);
+    background-color: #fff5f5;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+    border-left: 4px solid #c53030;
 }
 
 .alert-success {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border-left: 4px solid var(--success);
-}
-
-/* Illustration Section */
-.auth-illustration {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--medium-gray);
-}
-
-.auth-illustration img {
-    width: 100%;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-}
-
-.illustration-caption {
-    text-align: center;
-    margin-top: 1rem;
-    color: var(--gray-text);
-    font-size: 0.95rem;
-    font-weight: 500;
+    background-color: #f0fff4;
+    color: #276749;
+    border: 1px solid #9ae6b4;
+    border-left: 4px solid #276749;
 }
 
 /* Loading State */
@@ -260,27 +277,42 @@
 }
 
 .auth-loading .spinner {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     margin: 0;
     border-width: 2px;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2F6B3C;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Responsive Design */
 @media (max-width: 576px) {
     .auth-card {
         padding: 2rem 1.5rem;
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
     }
 
-    .auth-logo h1 {
-        font-size: 1.5rem;
+    .auth-page {
+        background-color: #FFFFFF;
+        padding: 0;
     }
 
-    .role-tabs {
-        flex-direction: column;
-    }
-
-    .role-tab {
-        width: 100%;
+    .auth-container {
+        max-width: 100%;
     }
 }
