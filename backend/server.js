@@ -92,14 +92,18 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
-    console.log('═══════════════════════════════════════');
-    console.log('🌾 KrishiSeva Backend Server Started 🌾');
-    console.log('═══════════════════════════════════════');
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🔗 API URL: http://localhost:${PORT}`);
-    console.log(`📡 Health Check: http://localhost:${PORT}/`);
-    console.log('═══════════════════════════════════════');
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log('═══════════════════════════════════════');
+        console.log('🌾 KrishiSeva Backend Server Started 🌾');
+        console.log('═══════════════════════════════════════');
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`🔗 API URL: http://localhost:${PORT}`);
+        console.log(`📡 Health Check: http://localhost:${PORT}/`);
+        console.log('═══════════════════════════════════════');
+    });
+}
+
+module.exports = app;
