@@ -1,113 +1,104 @@
-// Order Model - Defines the structure of order data in MongoDB
-const mongoose = require('mongoose');
+// Order Model - Supabase PostgreSQL version
+// Helper module for order database operations
+const { supabase } = require('../config/db');
 
-// Define the Order Schema
-const orderSchema = new mongoose.Schema(
-    {
-        // Reference to the buyer (User who placed the order)
-        buyer: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: [true, 'Buyer is required'],
-        },
-
-        // Buyer's name (cached for easier access)
-        buyerName: {
-            type: String,
-            required: true,
-        },
-
-        // Buyer's email (cached for easier access)
-        buyerEmail: {
-            type: String,
-            required: true,
-        },
-
-        // Array of ordered items
-        items: [
-            {
-                productId: {
-                    type: Number,
-                    required: true,
-                },
-                productName: {
-                    type: String,
-                    required: true,
-                },
-                quantity: {
-                    type: Number,
-                    required: true,
-                    min: [1, 'Quantity must be at least 1'],
-                },
-                pricePerKg: {
-                    type: Number,
-                    required: true,
-                    min: [0, 'Price must be positive'],
-                },
-                totalPrice: {
-                    type: Number,
-                    required: true,
-                },
-                farmerName: {
-                    type: String,
-                    required: true,
-                },
-            },
-        ],
-
-        // Total amount for the order
-        totalAmount: {
-            type: Number,
-            required: true,
-            min: [0, 'Total amount must be positive'],
-        },
-
-        // Order status
-        status: {
-            type: String,
-            enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
-            default: 'pending',
-        },
-
-        // Delivery address
+// Convert DB row (snake_case) to app format (camelCase)
+// This keeps the API responses identical to the old MongoDB version
+function toAppFormat(row) {
+    if (!row) return null;
+    return {
+        _id: row.id,
+        id: row.id,
+        buyer: row.buyer,
+        buyerName: row.buyer_name,
+        buyerEmail: row.buyer_email,
+        items: row.items || [],
+        totalAmount: parseFloat(row.total_amount),
+        status: row.status,
         deliveryAddress: {
-            street: String,
-            city: String,
-            state: String,
-            pincode: String,
-            phone: String,
+            street: row.delivery_street || '',
+            city: row.delivery_city || '',
+            state: row.delivery_state || '',
+            pincode: row.delivery_pincode || '',
+            phone: row.delivery_phone || '',
         },
+        paymentStatus: row.payment_status,
+        notes: row.notes || '',
+        cancellationReason: row.cancellation_reason || '',
+        cancelledAt: row.cancelled_at,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
+}
 
-        // Payment status
-        paymentStatus: {
-            type: String,
-            enum: ['pending', 'paid', 'failed'],
-            default: 'pending',
-        },
+const Order = {
+    // Create a new order
+    async create(orderData) {
+        const { data, error } = await supabase
+            .from('orders')
+            .insert({
+                buyer: orderData.buyer,
+                buyer_name: orderData.buyerName,
+                buyer_email: orderData.buyerEmail,
+                items: orderData.items,
+                total_amount: orderData.totalAmount,
+                delivery_street: orderData.deliveryAddress?.street || '',
+                delivery_city: orderData.deliveryAddress?.city || '',
+                delivery_state: orderData.deliveryAddress?.state || '',
+                delivery_pincode: orderData.deliveryAddress?.pincode || '',
+                delivery_phone: orderData.deliveryAddress?.phone || '',
+                notes: orderData.notes || '',
+            })
+            .select()
+            .single();
 
-        // Notes or special instructions
-        notes: {
-            type: String,
-            maxlength: 500,
-        },
-
-        // Cancellation details
-        cancellationReason: {
-            type: String,
-            maxlength: 500,
-        },
-
-        cancelledAt: {
-            type: Date,
-        },
+        if (error) throw error;
+        return toAppFormat(data);
     },
-    {
-        // Automatically add createdAt and updatedAt timestamps
-        timestamps: true,
-    }
-);
 
-// Create and export the Order model
-const Order = mongoose.model('Order', orderSchema);
+    // Find all orders for a buyer, sorted by most recent first
+    async findByBuyer(buyerId) {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('buyer', buyerId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return (data || []).map(toAppFormat);
+    },
+
+    // Find a single order by ID
+    async findById(id) {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
+
+        if (error) throw error;
+        return data ? toAppFormat(data) : null;
+    },
+
+    // Update an order's fields
+    async update(id, updates) {
+        const dbUpdates = {};
+
+        if (updates.status !== undefined) dbUpdates.status = updates.status;
+        if (updates.cancellationReason !== undefined) dbUpdates.cancellation_reason = updates.cancellationReason;
+        if (updates.cancelledAt !== undefined) dbUpdates.cancelled_at = updates.cancelledAt;
+        if (updates.paymentStatus !== undefined) dbUpdates.payment_status = updates.paymentStatus;
+
+        const { data, error } = await supabase
+            .from('orders')
+            .update(dbUpdates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return toAppFormat(data);
+    },
+};
 
 module.exports = Order;

@@ -1,4 +1,5 @@
 // Order Controllers - Handle order creation and management
+// Now using Supabase (PostgreSQL) instead of MongoDB
 const Order = require('../models/Order');
 const User = require('../models/User');
 
@@ -60,7 +61,7 @@ exports.createOrder = async (req, res) => {
 
         // Create new order
         const order = await Order.create({
-            buyer: user._id,
+            buyer: user.id,
             buyerName: user.name,
             buyerEmail: user.email,
             items: orderItems,
@@ -75,13 +76,13 @@ exports.createOrder = async (req, res) => {
             notes: notes || '',
         });
 
-        console.log('✅ Order created successfully:', order._id);
+        console.log('✅ Order created successfully:', order.id);
 
         res.status(201).json({
             success: true,
             message: 'Order placed successfully!',
             order: {
-                id: order._id,
+                id: order.id,
                 items: order.items,
                 totalAmount: order.totalAmount,
                 status: order.status,
@@ -104,14 +105,13 @@ exports.getOrders = async (req, res) => {
     try {
         console.log('📋 Get Orders Request:', { userId: req.user.id });
 
-        const orders = await Order.find({ buyer: req.user.id })
-            .sort({ createdAt: -1 }); // Most recent first
+        const orders = await Order.findByBuyer(req.user.id);
 
         res.status(200).json({
             success: true,
             count: orders.length,
             orders: orders.map(order => ({
-                id: order._id,
+                id: order.id,
                 items: order.items,
                 totalAmount: order.totalAmount,
                 status: order.status,
@@ -149,7 +149,7 @@ exports.getOrderById = async (req, res) => {
         }
 
         // Check if order belongs to the requesting user
-        if (order.buyer.toString() !== req.user.id) {
+        if (order.buyer !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 error: 'Unauthorized to view this order',
@@ -159,7 +159,7 @@ exports.getOrderById = async (req, res) => {
         res.status(200).json({
             success: true,
             order: {
-                id: order._id,
+                id: order.id,
                 buyerName: order.buyerName,
                 buyerEmail: order.buyerEmail,
                 items: order.items,
@@ -211,15 +211,14 @@ exports.updateOrderStatus = async (req, res) => {
         }
 
         // For now, only allow buyers to cancel their own orders
-        if (status === 'cancelled' && order.buyer.toString() !== req.user.id) {
+        if (status === 'cancelled' && order.buyer !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 error: 'Unauthorized to cancel this order',
             });
         }
 
-        order.status = status;
-        await order.save();
+        const updatedOrder = await Order.update(id, { status });
 
         console.log('✅ Order status updated:', { orderId: id, status });
 
@@ -227,9 +226,9 @@ exports.updateOrderStatus = async (req, res) => {
             success: true,
             message: 'Order status updated successfully',
             order: {
-                id: order._id,
-                status: order.status,
-                updatedAt: order.updatedAt,
+                id: updatedOrder.id,
+                status: updatedOrder.status,
+                updatedAt: updatedOrder.updatedAt,
             },
         });
     } catch (error) {
@@ -267,7 +266,7 @@ exports.cancelOrder = async (req, res) => {
         }
 
         // Check if order belongs to the requesting user
-        if (order.buyer.toString() !== req.user.id) {
+        if (order.buyer !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 error: 'Unauthorized to cancel this order',
@@ -283,10 +282,11 @@ exports.cancelOrder = async (req, res) => {
         }
 
         // Update order
-        order.status = 'cancelled';
-        order.cancellationReason = reason;
-        order.cancelledAt = new Date();
-        await order.save();
+        const updatedOrder = await Order.update(id, {
+            status: 'cancelled',
+            cancellationReason: reason,
+            cancelledAt: new Date().toISOString(),
+        });
 
         console.log('✅ Order cancelled successfully:', { orderId: id });
 
@@ -294,10 +294,10 @@ exports.cancelOrder = async (req, res) => {
             success: true,
             message: 'Order cancelled successfully',
             order: {
-                id: order._id,
-                status: order.status,
-                cancellationReason: order.cancellationReason,
-                cancelledAt: order.cancelledAt,
+                id: updatedOrder.id,
+                status: updatedOrder.status,
+                cancellationReason: updatedOrder.cancellationReason,
+                cancelledAt: updatedOrder.cancelledAt,
             },
         });
     } catch (error) {

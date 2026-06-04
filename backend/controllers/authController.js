@@ -1,4 +1,5 @@
 // Authentication Controllers - Handle signup, login, and dashboard logic
+// Now using Supabase (PostgreSQL) instead of MongoDB
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
@@ -35,6 +36,14 @@ exports.signup = async (req, res) => {
             });
         }
 
+        // Validate password length
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                error: 'Password must be at least 6 characters',
+            });
+        }
+
         // Check if user with this email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -44,8 +53,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        // Create new user in database
-
+        // Create new user in database (password is hashed inside User.create)
         const user = await User.create({
             name,
             email,
@@ -54,7 +62,7 @@ exports.signup = async (req, res) => {
         });
 
         // Generate JWT token for the new user
-        const token = generateToken(user._id, user.email, user.role);
+        const token = generateToken(user.id, user.email, user.role);
 
         // Send success response with token and user data
         res.status(201).json({
@@ -62,7 +70,7 @@ exports.signup = async (req, res) => {
             message: 'User registered successfully! Welcome to KrishiSeva.',
             token: token,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -70,6 +78,25 @@ exports.signup = async (req, res) => {
         });
     } catch (error) {
         console.error('Signup Error:', error);
+
+        // Handle duplicate key errors (from Supabase unique constraint)
+        if (error.code === 11000 || error.code === '23505') {
+            return res.status(400).json({
+                success: false,
+                error: 'Email already registered. Please use a different email or login.',
+            });
+        }
+
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({
+                success: false,
+                error: validationErrors.join(', '),
+            });
+        }
+
+        // Generic server error
         res.status(500).json({
             success: false,
             error: 'Server error during registration. Please try again.',
@@ -103,8 +130,8 @@ exports.login = async (req, res) => {
             });
         }
 
-        //comparePassword 
-        const isPasswordCorrect = await user.comparePassword(password);
+        // comparePassword — now a static method on User helper
+        const isPasswordCorrect = await User.comparePassword(password, user.password);
 
         if (!isPasswordCorrect) {
             return res.status(401).json({
@@ -114,7 +141,7 @@ exports.login = async (req, res) => {
         }
 
         // Generate JWT token
-        const token = generateToken(user._id, user.email, user.role);
+        const token = generateToken(user.id, user.email, user.role);
 
 
         res.status(200).json({
@@ -122,7 +149,7 @@ exports.login = async (req, res) => {
             message: 'Login successful! Welcome back to KrishiSeva.',
             token: token,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -141,7 +168,7 @@ exports.login = async (req, res) => {
 exports.getDashboard = async (req, res) => {
     try {
 
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.id, true); // true = exclude password
 
         if (!user) {
             return res.status(404).json({
@@ -154,7 +181,7 @@ exports.getDashboard = async (req, res) => {
         res.status(200).json({
             success: true,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -190,17 +217,19 @@ exports.updateProfile = async (req, res) => {
             });
         }
 
-        // Update fields
+        // Build the update object
+        const updates = {};
+
         if (phone) {
-            user.phone = phone;
+            updates.phone = phone;
         }
 
         if (profilePhoto !== undefined) {
-            user.profilePhoto = profilePhoto;
+            updates.profilePhoto = profilePhoto;
         }
 
         if (address) {
-            user.address = {
+            updates.address = {
                 street: address.street || user.address?.street || '',
                 city: address.city || user.address?.city || '',
                 state: address.state || user.address?.state || '',
@@ -209,27 +238,30 @@ exports.updateProfile = async (req, res) => {
         }
 
         // Check if profile is now complete (phone + address)
-        const isAddressComplete = user.address?.street && user.address?.city &&
-            user.address?.state && user.address?.pincode;
+        const finalPhone = updates.phone || user.phone;
+        const finalAddress = updates.address || user.address;
+        const isAddressComplete = finalAddress?.street && finalAddress?.city &&
+            finalAddress?.state && finalAddress?.pincode;
 
-        if (user.phone && isAddressComplete) {
-            user.profileCompleted = true;
+        if (finalPhone && isAddressComplete) {
+            updates.profileCompleted = true;
         }
 
-        await user.save();
+        // Update user in Supabase
+        const updatedUser = await User.update(user.id, updates);
 
         res.status(200).json({
             success: true,
             message: 'Profile updated successfully',
             user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                phone: user.phone,
-                address: user.address,
-                profileCompleted: user.profileCompleted,
-                profilePhoto: user.profilePhoto,
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                phone: updatedUser.phone,
+                address: updatedUser.address,
+                profileCompleted: updatedUser.profileCompleted,
+                profilePhoto: updatedUser.profilePhoto,
             },
         });
     } catch (error) {

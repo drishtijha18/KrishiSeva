@@ -1,21 +1,20 @@
 // KrishiSeva Backend Server
 // Main server file for the authentication system
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const { checkConnection } = require('./config/db');
 const authRoutes = require('./routes/auth');
 const cropPricesRoutes = require('./routes/cropprices');
 const orderRoutes = require('./routes/order');
 
-// Load environment variables from .env file
-dotenv.config();
-
 // Initialize Express app
 const app = express();
 
-// Connect to MongoDB database
-connectDB();
+// Verify connection with Supabase
+checkConnection();
 
 // Middleware
 
@@ -40,7 +39,6 @@ app.use(
                 callback(null, true); // Allow for now, can be strict in production
             }
         },
-        credentials: true,
     })
 );
 

@@ -1,121 +1,132 @@
-// User Model - Defines the structure of user data in MongoDB
-//ye standerd code hai user model ka jisme user ka data store hota hai database me....like kisi bhi schema ko banane ka
-const mongoose = require('mongoose');
+// User Model - Supabase PostgreSQL version
+// Helper module for user database operations with bcrypt password hashing
+const { supabase } = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-// Define the User Schema (structure of user documents)
-//mongoose.schema ka use karke hum ek naya schema bana rahe hai jisme user ke fields define kar rahe hai
-const userSchema = new mongoose.Schema(
-    {
-        // User's full name
-        name: {
-            type: String,
-            required: [true, 'Please provide your name'],
-            trim: true,
-        },
-
-        // User's email address (must be unique)
-        email: {
-            type: String,
-            required: [true, 'Please provide your email'],
-            unique: true,
-            lowercase: true,
-            trim: true,
-            match: [
-                /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-                'Please provide a valid email',
-            ],
-        },
-        //ye terminal pr error dega agar email valid nhi hoga..terminal pr command se check kr skte hai..
-        // User's password (will be hashed before saving)
-        password: {
-            type: String,
-            required: [true, 'Please provide a password'],
-            minlength: [6, 'Password must be at least 6 characters'],
-        },
-
-        // 2 role h Buyer or Seller
-        role: {
-            type: String,
-            enum: ['Buyer', 'Seller'],
-            required: [true, 'Please select a role'],
-        },
-
-        // Profile photo (base64 or URL)
-        profilePhoto: {
-            type: String,
-            default: '',
-        },
-
-        // Phone number (optional initially, required for orders)
-        phone: {
-            type: String,
-            default: '',
-            trim: true,
-        },
-
-        // Address for delivery
+// Convert DB row (snake_case) to app format (camelCase)
+// This keeps the API responses identical to the old MongoDB version
+function toAppFormat(row) {
+    if (!row) return null;
+    return {
+        _id: row.id,
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        password: row.password,
+        role: row.role,
+        profilePhoto: row.profile_photo,
+        phone: row.phone,
         address: {
-            street: {
-                type: String,
-                default: '',
-            },
-            city: {
-                type: String,
-                default: '',
-            },
-            state: {
-                type: String,
-                default: '',
-            },
-            pincode: {
-                type: String,
-                default: '',
-            },
+            street: row.address_street || '',
+            city: row.address_city || '',
+            state: row.address_state || '',
+            pincode: row.address_pincode || '',
         },
+        profileCompleted: row.profile_completed,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    };
+}
 
-        // Profile completion flag
-        profileCompleted: {
-            type: Boolean,
-            default: false,
-        },
-    },
-    {
-        // Automatically add createdAt and updatedAt timestamps
-        timestamps: true,
-    }
-);
-
-// Middleware: Hash password before saving to database
-// This runs automatically before a new user is created
-userSchema.pre('save', async function (next) {
-    // mera password saltvalue k through hash hoga
-    if (!this.isModified('password')) {
-        return next();
-    }
-    //this function is used for map filter or reduce
-    try {
-        // Generate a salt
+const User = {
+    // Create a new user with hashed password
+    async create({ name, email, password, role }) {
+        // Hash password before storing (replaces Mongoose pre-save hook)
         const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Hash the password with the salt
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
+        const { data, error } = await supabase
+            .from('users')
+            .insert({
+                name: name.trim(),
+                email: email.toLowerCase().trim(),
+                password: hashedPassword,
+                role,
+            })
+            .select()
+            .single();
 
-// Compare entered password with hashed password in database
-// Returns krega true if passwords match, false otherwise
-userSchema.methods.comparePassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
+        if (error) {
+            // Convert Supabase error to match old error format for controller compatibility
+            if (error.code === '23505') {
+                // Unique constraint violation (duplicate email)
+                const err = new Error('Email already registered');
+                err.code = 11000; // Match MongoDB duplicate key error code
+                throw err;
+            }
+            if (error.code === '23514') {
+                // Check constraint violation (invalid role)
+                const err = new Error('Validation failed');
+                err.name = 'ValidationError';
+                err.errors = { role: { message: 'Role must be either Buyer or Seller' } };
+                throw err;
+            }
+            throw error;
+        }
+
+        return toAppFormat(data);
+    },
+
+    // Find a user by email
+    async findOne({ email }) {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email.toLowerCase().trim())
+            .maybeSingle();
+
+        if (error) throw error;
+        return data ? toAppFormat(data) : null;
+    },
+
+    // Find a user by ID
+    // excludePassword: if true, won't include password in result
+    async findById(id, excludePassword = false) {
+        const columns = excludePassword
+            ? 'id, name, email, role, profile_photo, phone, address_street, address_city, address_state, address_pincode, profile_completed, created_at, updated_at'
+            : '*';
+
+        const { data, error } = await supabase
+            .from('users')
+            .select(columns)
+            .eq('id', id)
+            .maybeSingle();
+
+        if (error) throw error;
+        return data ? toAppFormat(data) : null;
+    },
+
+    // Update user fields
+    async update(id, updates) {
+        // Convert camelCase app fields to snake_case DB fields
+        const dbUpdates = {};
+
+        if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+        if (updates.profilePhoto !== undefined) dbUpdates.profile_photo = updates.profilePhoto;
+        if (updates.profileCompleted !== undefined) dbUpdates.profile_completed = updates.profileCompleted;
+        if (updates.address !== undefined) {
+            if (updates.address.street !== undefined) dbUpdates.address_street = updates.address.street;
+            if (updates.address.city !== undefined) dbUpdates.address_city = updates.address.city;
+            if (updates.address.state !== undefined) dbUpdates.address_state = updates.address.state;
+            if (updates.address.pincode !== undefined) dbUpdates.address_pincode = updates.address.pincode;
+        }
+
+        const { data, error } = await supabase
+            .from('users')
+            .update(dbUpdates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return toAppFormat(data);
+    },
+
+    // Compare entered password with hashed password in database
+    // Returns true if passwords match, false otherwise
+    async comparePassword(enteredPassword, hashedPassword) {
+        return await bcrypt.compare(enteredPassword, hashedPassword);
+    },
 };
 
-// Create and export the User model
-const User = mongoose.model('User', userSchema);
-
 module.exports = User;
-//salt value se security badh jati hai...
-//hashing se password secure ho jata hai database me store hone ke baad
-//bcryptjs ek library hai jo hashing ke liye use hoti hai
