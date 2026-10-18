@@ -4,8 +4,9 @@ import { getToken } from '../utils/auth';
 
 // Get API URL from environment variables
 // In development: http://localhost:5001
-// In production: Your deployed backend URL (set in Vercel environment variables)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+// In development: http://localhost:5001
+// In production: Your deployed backend URL, or relative path '' for same-domain deployment
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5001' : '');
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
