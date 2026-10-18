@@ -61,7 +61,7 @@ app.use((req, res, next) => {
 // Routes
 
 // Health check route
-app.get('/', (req, res) => {
+app.get(['/', '/api'], (req, res) => {
     res.json({
         message: 'KrishiSeva API is running! 🌾',
         status: 'Active',
@@ -69,14 +69,14 @@ app.get('/', (req, res) => {
     });
 });
 
-// Authentication routes
-app.use('/api/auth', authRoutes);
+// Authentication routes (support both /api/auth and /auth)
+app.use(['/api/auth', '/auth'], authRoutes);
 
-// Crop prices routes
-app.use('/api/cropprices', cropPricesRoutes);
+// Crop prices routes (support both /api/cropprices and /cropprices)
+app.use(['/api/cropprices', '/cropprices'], cropPricesRoutes);
 
-// Order routes
-app.use('/api/orders', orderRoutes);
+// Order routes (support both /api/orders and /orders)
+app.use(['/api/orders', '/orders'], orderRoutes);
 
 // 404 Error handler for undefined routes
 app.use((req, res) => {
@@ -98,16 +98,14 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5001;
 
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
-        console.log('═══════════════════════════════════════');
-        console.log('🌾 KrishiSeva Backend Server Started 🌾');
-        console.log('═══════════════════════════════════════');
-        console.log(`🚀 Server running on port ${PORT}`);
-        console.log(`🔗 API URL: http://localhost:${PORT}`);
-        console.log(`📡 Health Check: http://localhost:${PORT}/`);
-        console.log('═══════════════════════════════════════');
-    });
-}
+app.listen(PORT, () => {
+    console.log('═══════════════════════════════════════');
+    console.log('🌾 KrishiSeva Backend Server Started 🌾');
+    console.log('═══════════════════════════════════════');
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔗 API URL: http://localhost:${PORT}`);
+    console.log(`📡 Health Check: http://localhost:${PORT}/`);
+    console.log('═══════════════════════════════════════');
+});
 
 module.exports = app;
