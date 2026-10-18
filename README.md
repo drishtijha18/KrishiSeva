@@ -1,183 +1,118 @@
-KrishiSeva – Agricultural Marketplace Authentication System
+# KrishiSeva – Agricultural Marketplace Platform
 
-KrishiSeva is a modern, role-based authentication system designed for an agricultural marketplace that connects Buyers and Sellers on a single platform.
-It provides secure user authentication, authorization, and role-based access using a clean and scalable full-stack architecture.
+KrishiSeva is a modern, role-based platform designed for an agricultural marketplace that connects Buyers and Sellers on a single unified platform.
+It provides secure user authentication, role-based access, live mandi prices, product discovery, shopping cart, and order tracking.
 
-Project Overview
+---
+
+## 🛠️ Tech Stack
 
-KrishiSeva focuses on building a production-ready authentication foundation for an agri-tech marketplace.
-The system ensures secure login, protected routes, and personalized dashboards for different user roles.
-
-This project is designed with clarity, scalability, and beginner-friendly code structure in mind.
-
-Key Features
-Authentication & Security
-
-JWT-based authentication
-
-Secure password hashing using bcrypt
-
-Token expiration handling
-
-Protected backend routes with middleware
-
-Role-Based Access Control
-
-Two roles: Buyer and Seller
-
-Separate dashboards for each role
-
-Role-based routing and authorization
-
-User Interface
-
-Clean agricultural theme with green & earth tones
-
-Glassmorphism-inspired UI
-
-Fully responsive layout
-
-Smooth transitions and animations
-
-Plain CSS (no UI frameworks)
-
-Architecture
-
-Clear separation of frontend and backend
-
-Modular and scalable folder structure
-
-Well-commented, readable code
-
-RESTful API design
-
-🛠️ Tech Stack
-Backend
-
-Node.js
-
-Express.js
-
-MongoDB
-
-Mongoose
-
-JWT (JSON Web Tokens)
-
-bcrypt
-
-Frontend
-
-React
-
-Vite
-
-React Router
-
-Axios
-
-Plain CSS
-
-Project Structure
-KrishiSeva/
-├── backend/
-│   ├── config/
-│   ├── models/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── routes/
-│   └── server.js
-│
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── Auth/
-    │   │   └── Dashboard/
-    │   ├── styles/
-    │   ├── utils/
-    │   ├── App.jsx
-    │   └── main.jsx
-
-User Roles
-Buyer
-
-Access buyer-specific dashboard
-
-Browse product listings (UI-ready)
-
-View seller information
-
-Prepare for cart and order features
-
-Seller
-
-Access seller-specific dashboard
-
-Manage products (UI-ready)
-
-View sales statistics (placeholder)
-
-Prepare for order management
-
-API Overview
-Authentication Endpoints
-
-POST /api/auth/signup – Register new users
-
-POST /api/auth/login – Authenticate users
-
-GET /api/auth/dashboard – Protected user data route
-
-All protected routes require a valid JWT token.
-
-Design System
-
-Color Palette
-
-Primary Green – #2d5016
-
-Secondary Green – #4a7c2c
-
-Accent Green – #6b9b47
-
-Earth Brown – #8b6f47
-
-Cream Background – #faf8f3
-
-Typography
-
-Font: Poppins
-
-Clean, readable, modern appearance
-
-Purpose & Use Case
-
-This project serves as:
-
-A starter authentication system for agri-marketplace platforms
-
-A learning project for full-stack authentication
-
-A scalable base for adding products, orders, payments, and admin features
-
-Future Enhancements
-
-Email verification
-
-Forgot/reset password
-
-Product CRUD operations
-
-Cart & order management
-
-Payment gateway integration
-
-Reviews & ratings
-
-Real-time buyer–seller chat
-
-Admin dashboard
-
-License
-
+### Backend
+- **Node.js & Express.js**: RESTful API server
+- **Supabase (PostgreSQL)**: Cloud database with Row-Level Security
+- **JWT (JSON Web Tokens)**: Stateless authentication
+- **bcryptjs**: Secure password hashing
+- **Data.gov.in API**: Real-time mandi crop prices
+
+### Frontend
+- **React 18 & Vite**: Fast and modern frontend architecture
+- **React Router 6**: Client-side routing with protected routes
+- **Axios**: HTTP client with auth interceptors
+- **Lucide React**: Modern UI icons
+- **Vanilla CSS**: Clean, responsive styling with glassmorphism design
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or newer recommended)
+- npm or yarn
+- A Supabase project account (free tier works great)
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/drishtijha18/KrishiSeva.git
+cd KrishiSeva
+```
+
+### 2. Configure Environment Variables
+
+**Backend (`backend/.env`):**
+```env
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_public_key
+JWT_SECRET=your_jwt_secret_key_here
+PORT=5001
+FRONTEND_URL=http://localhost:5173
+DATA_GOV_API_KEY=your_data_gov_in_api_key
+```
+
+**Frontend (`frontend/.env`):**
+```env
+VITE_API_URL=http://localhost:5001
+```
+
+### 3. Database Setup (Supabase)
+1. Go to your [Supabase Dashboard](https://supabase.com/dashboard).
+2. Open the **SQL Editor**.
+3. Copy and run the script from `backend/supabase_schema.sql` to initialize the `users` and `orders` tables.
+
+### 4. Install Dependencies & Run
+
+From the root directory:
+```bash
+# Install backend and frontend dependencies
+npm run install-backend
+npm run install-frontend
+
+# Run both servers concurrently
+npm run dev
+```
+
+Or run them individually in separate terminals:
+
+```bash
+# Run Backend (Port 5001)
+npm run server
+
+# Run Frontend (Port 5173)
+npm run client
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+---
+
+## ☁️ Deployment on Vercel
+
+1. Push your code to GitHub.
+2. In the [Vercel Dashboard](https://vercel.com/dashboard), import your `KrishiSeva` repository.
+3. Configure the following **Environment Variables** in Vercel:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `JWT_SECRET`
+   - `DATA_GOV_API_KEY`
+4. Deploy! The monorepo `vercel.json` automatically builds the static frontend and configures backend serverless functions at `/api/*`.
+
+---
+
+## 👥 User Roles & Features
+
+### Buyer
+- Access buyer-specific dashboard
+- Browse agricultural product listings
+- View live mandi prices
+- Manage cart, favorites, and place orders
+- Track personal order history
+
+### Seller
+- Access seller-specific dashboard
+- Add and manage product inventory
+- View incoming orders and fulfill status updates
+- Track sales statistics
+
+---
+
+## 📄 License
 This project is open-source and intended for learning and educational purposes.
