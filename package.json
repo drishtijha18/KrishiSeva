@@ -4,7 +4,11 @@
     "description": "Root package to handle deployment",
     "scripts": {
         "install-backend": "cd backend && npm install",
+        "install-frontend": "cd frontend && npm install",
         "build": "npm run install-backend",
+        "server": "cd backend && npm start",
+        "client": "cd frontend && npm run dev",
+        "dev": "npm run server & npm run client",
         "start": "cd backend && npm start"
     },
     "keywords": [],
