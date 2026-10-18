@@ -3,6 +3,20 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const isDatabaseConnectionError = (error) => {
+    const message = [error?.message, error?.cause?.message]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+    return error?.code === 'ENOTFOUND' ||
+        message.includes('fetch failed') ||
+        message.includes('getaddrinfo') ||
+        message.includes('network');
+};
+
 // Helper function: Generate JWT token
 const generateToken = (userId, email, role) => {
     // Create a token that expires in 24 hours
@@ -25,6 +39,13 @@ exports.signup = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: 'Please provide all required fields (name, email, password, role)',
+            });
+        }
+
+        if (!isValidEmail(email.trim())) {
+            return res.status(400).json({
+                success: false,
+                error: 'Please provide a valid email address (for example, name@example.com).',
             });
         }
 
@@ -93,6 +114,16 @@ exports.signup = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: validationErrors.join(', '),
+            });
+        }
+
+        // A DNS/network failure means the configured Supabase project cannot be
+        // reached. It is not an invalid registration request, so expose it as a
+        // retryable service issue instead of a generic internal server error.
+        if (isDatabaseConnectionError(error)) {
+            return res.status(503).json({
+                success: false,
+                error: 'Registration is temporarily unavailable because the database cannot be reached. Please try again shortly.',
             });
         }
 

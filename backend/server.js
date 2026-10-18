@@ -1,7 +1,11 @@
 // KrishiSeva Backend Server
 // Main server file for the authentication system
 const dotenv = require('dotenv');
-dotenv.config();
+const path = require('path');
+
+// Always load the backend environment file, even when the server is started
+// from the repository root (for example: `node backend/server.js`).
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const express = require('express');
 const cors = require('cors');

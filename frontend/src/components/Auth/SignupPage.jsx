@@ -49,6 +49,11 @@ const SignupPage = () => {
             return;
         }
 
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+            setError('Please enter a valid email address (for example, name@example.com).');
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             return;
